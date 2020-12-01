@@ -66,7 +66,7 @@ class FaceDetect(object):
         self.db[name] = new_person
 
         self.save()
-        
+
             
     def run(self):
 
@@ -126,7 +126,7 @@ class FaceDetect(object):
 
 
             # Display the results
-            for (top, right, bottom, left), name in zip(face_locations, face_names):
+            for (top, right, bottom, left), name, age in zip(face_locations, face_names, face_ages):
                 # Scale back up face locations since the frame we detected in was scaled to 1/4 size
                 top *= 4
                 right *= 4
