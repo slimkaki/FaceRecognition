@@ -34,11 +34,39 @@ class FaceDetect(object):
     def register(self):
         name = input("What is your name? ")
         age = int(input("How old are you? "))
-        # Tirar uma foto e salvar em /images
-            # image = face_recognition.load_image_file(f"images/{name}.jpg")
-            # face_encoding = face_recognition.face_encodings(image)[0]
-        # salvar no db (x CONVERTER ENCODING PARA LIST x)
-        pass
+        print("Press 'y' to take a picture...")
+
+
+        cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop) 
+        
+        while(True):
+            
+            _ ,frame = cap.read() # return a single frame in variable `frame`
+            
+            cv2.imshow('Video',frame) #display the captured image
+            
+            if cv2.waitKey(1) & 0xFF == ord('y'): #save on pressing 'y' 
+                cv2.imwrite(f'images/{name}.jpg',frame)
+                cv2.destroyAllWindows()
+                break
+
+        cap.release()
+
+        my_image = face_recognition.load_image_file(f"images/{name}.jpg")
+        my_face_encoding = face_recognition.face_encodings(my_image)[0]
+
+        new_person = {
+            "encoding" : list(my_face_encoding),
+            "infos" : {
+                "Name" : name,
+                "Age"  : age
+            }
+        }
+
+        self.db[name] = new_person
+
+        self.save()
+        
             
     def run(self):
 
@@ -111,7 +139,7 @@ class FaceDetect(object):
                 # Draw a label with a name below the face
                 cv2.rectangle(frame, (left, bottom + 70), (right, bottom), (0, 0, 255), cv2.FILLED)
                 font = cv2.FONT_HERSHEY_DUPLEX
-                cv2.putText(frame, name, (left + 6, bottom + 26), font, 1.0, (255, 255, 255), 1)
+                cv2.putText(frame, name.title(), (left + 6, bottom + 26), font, 1.0, (255, 255, 255), 1)
                 cv2.putText(frame, str(age), (left + 6, bottom + 62), font, 1.0, (255, 255, 255), 1)
 
             # Display the resulting image

@@ -24,8 +24,10 @@ if __name__ == '__main__':
     # conteudo = json.dumps(db, indent=4, sort_keys=True)
     # file.write(conteudo)
     # file.close()
-
+    
     face = FaceDetect()
+
+    face.register()
     face.run()
     
 
