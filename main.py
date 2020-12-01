@@ -27,7 +27,7 @@ if __name__ == '__main__':
     
     face = FaceDetect()
 
-    face.register()
+    # face.register()
     face.run()
     
 
