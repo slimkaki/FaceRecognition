@@ -131,7 +131,8 @@
             0.06677743792533875
         ],
         "infos": {
-            "Name": "Joe Biden"
+            "Name": "Joe Biden",
+            "Age" : 78
         }
     },
     "Obama": {
@@ -266,7 +267,8 @@
             0.006719678640365601
         ],
         "infos": {
-            "Name" : "Barack Obama"
+            "Name": "Barack Obama",
+            "Age" : 59
         }
     }
 }

@@ -6,6 +6,7 @@ class FaceDetect(object):
     def __init__(self):
         self.known_face_encodings = []
         self.known_face_names = []
+        self.known_face_ages = []
         self.db = {}
         self.load()
 
@@ -18,8 +19,10 @@ class FaceDetect(object):
 
         # Create arrays of known face encodings and their names
         self.known_face_encodings = [ self.db[x]["encoding"] for x in self.db ]
-
         self.known_face_names = [ self.db[x]["infos"]["Name"] for x in self.db ]
+        self.known_face_ages = [ self.db[x]["infos"]["Age"] for x in self.db ]
+        # print(self.known_face_ages)
+        # print(self.known_face_names)
         
 
     def save(self):
@@ -29,7 +32,8 @@ class FaceDetect(object):
         file.close()
 
     def register(self):
-        # name = input("What is your name? ")
+        name = input("What is your name? ")
+        age = int(input("How old are you? "))
         # Tirar uma foto e salvar em /images
             # image = face_recognition.load_image_file(f"images/{name}.jpg")
             # face_encoding = face_recognition.face_encodings(image)[0]
@@ -48,6 +52,7 @@ class FaceDetect(object):
         face_locations = []
         face_encodings = []
         face_names = []
+        face_ages = []
         process_this_frame = True
 
         while True:
@@ -67,10 +72,12 @@ class FaceDetect(object):
                 face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
                 face_names = []
+                face_ages = []
                 for face_encoding in face_encodings:
                     # See if the face is a match for the known face(s)
                     matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
                     name = "Unknown"
+                    age = "Unknown"
 
                     # # If a match was found in known_face_encodings, just use the first one.
                     # if True in matches:
@@ -82,8 +89,10 @@ class FaceDetect(object):
                     best_match_index = np.argmin(face_distances)
                     if matches[best_match_index]:
                         name = self.known_face_names[best_match_index]
+                        age = self.known_face_ages[best_match_index]
 
                     face_names.append(name)
+                    face_ages.append(age)
 
             process_this_frame = not process_this_frame
 
@@ -100,9 +109,10 @@ class FaceDetect(object):
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
                 # Draw a label with a name below the face
-                cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
+                cv2.rectangle(frame, (left, bottom + 70), (right, bottom), (0, 0, 255), cv2.FILLED)
                 font = cv2.FONT_HERSHEY_DUPLEX
-                cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+                cv2.putText(frame, name, (left + 6, bottom + 26), font, 1.0, (255, 255, 255), 1)
+                cv2.putText(frame, str(age), (left + 6, bottom + 62), font, 1.0, (255, 255, 255), 1)
 
             # Display the resulting image
             cv2.imshow('Video', frame)
