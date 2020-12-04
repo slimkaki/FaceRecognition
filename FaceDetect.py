@@ -1,11 +1,12 @@
 import cv2, face_recognition, json
 import numpy as np
+import uuid
 
 class FaceDetect(object):
 
     def __init__(self):
         self.known_face_encodings = []
-        self.known_face_names = []
+        self.known_face_uuid = []
         self.db = {}
         self.load()
 
@@ -18,7 +19,7 @@ class FaceDetect(object):
 
         # Create arrays of known face encodings and their names
         self.known_face_encodings = [ self.db[x]["encoding"] for x in self.db ]
-        self.known_face_names = [ x for x in self.db ]
+        self.known_face_uuid = [ x for x in self.db ]
         
 
     def save(self):
@@ -59,7 +60,7 @@ class FaceDetect(object):
             }
         }
 
-        self.db[name] = new_person
+        self.db[str(uuid.uuid4())] = new_person
 
         self.save()
 
@@ -75,8 +76,8 @@ class FaceDetect(object):
         # Initialize some variables
         face_locations = []
         face_encodings = []
-        face_names = []
-        # face_ages = []
+        face_uuids = []
+
         process_this_frame = True
 
         while True:
@@ -95,32 +96,33 @@ class FaceDetect(object):
                 face_locations = face_recognition.face_locations(rgb_small_frame)
                 face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
-                face_names = []
-                face_ages = []
+                face_uuids = []
                 for face_encoding in face_encodings:
                     # See if the face is a match for the known face(s)
                     matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
+                    uuid = ""
                     name = "Unknown"
                     age = ""
 
                     # # If a match was found in known_face_encodings, just use the first one.
                     # if True in matches:
                     #     first_match_index = matches.index(True)
-                    #     name = known_face_names[first_match_index]
+                    #     name = known_face_uuid[first_match_index]
 
                     # Or instead, use the known face with the smallest distance to the new face
                     face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
                     best_match_index = np.argmin(face_distances)
                     if matches[best_match_index]:
-                        name = self.known_face_names[best_match_index]
+                        uuid = self.known_face_uuid[best_match_index]
+                        name = self.db[uuid]["infos"]["Name"]
 
-                    face_names.append(name)
+                    face_uuids.append(uuid)
 
             process_this_frame = not process_this_frame
 
 
             # Display the results
-            for (top, right, bottom, left), name in zip(face_locations, face_names):
+            for (top, right, bottom, left), uuid in zip(face_locations, face_uuids):
                 # Scale back up face locations since the frame we detected in was scaled to 1/4 size
                 top *= 4
                 right *= 4
@@ -134,11 +136,15 @@ class FaceDetect(object):
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
                 cv2.rectangle(frame, (left, bottom + 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-                # Draw a label with a name below the face
-                cv2.putText(frame, name.title(), (left + 6, bottom + 26), font, 1.0, (255, 255, 255), 1)
+                
+                if uuid == "":
+                    cv2.putText(frame, name.title(), (left + 6, bottom + 26), font, 1.0, (255, 255, 255), 1)
+                else:
+                    # Draw a label with a name below the face
+                    cv2.putText(frame, self.db[uuid]["infos"]["Name"].title(), (left + 6, bottom + 26), font, 1.0, (255, 255, 255), 1)
 
                 if name != 'Unknown':
-                    age = self.db[name]["infos"]["Age"]
+                    age = self.db[uuid]["infos"]["Age"]
 
                     cv2.rectangle(frame, (left, bottom + 70), (right, bottom + 35), (0, 0, 255), cv2.FILLED)
                     cv2.putText(frame, str(age), (left + 6, bottom + 62), font, 1.0, (255, 255, 255), 1)
